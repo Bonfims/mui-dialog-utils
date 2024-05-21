@@ -99,7 +99,13 @@ function Preview() {
                 </ButtonThatLoadsDialogWithContextExample>
                 <br />
                 <hr />
-                <DialogProvider>
+                <DialogProvider globalDialogProps={{ 
+                    sx: {
+                        "& .MuiDialog-container": {
+                            alignItems: "baseline"
+                        }
+                    }
+                }}>
                     <ButtonThatLoadsDialogWithContextExample>
                         Context with provider
                     </ButtonThatLoadsDialogWithContextExample>

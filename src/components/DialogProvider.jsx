@@ -46,11 +46,13 @@ function Action({ children }) {
 };
 
 function NestedDialog({ title, content, actions, options, index, next }) {
+    const { globalDialogProps } = React.useContext(DialogContext);
+
     return (
         <Dialog
             key={`${index || "last"}-${title || "custom"}`}
             {...options}
-            {...(options?.dialogProps)}
+            {...({ ...globalDialogProps, ...options?.dialogProps })}
             open
             onClose={options?.onClose}
         >
@@ -62,7 +64,8 @@ function NestedDialog({ title, content, actions, options, index, next }) {
     )
 };
 
-export default function DialogProvider({ children }) {
+export default function DialogProvider({ globalDialogProps, children }) {
+    const { globalDialogProps: currentGlobalDialogProps } = React.useContext(DialogContext);
     const [dialogs, setDialogsStack] = useState([]);
 
     const handleClose = () =>
@@ -132,7 +135,7 @@ export default function DialogProvider({ children }) {
         ) : handleClose();
 
     return (
-        <DialogContext.Provider value={{ initialized: true, setDialog: setCustom, setConfirm, setAlert }}>
+        <DialogContext.Provider value={{ globalDialogProps: { ...currentGlobalDialogProps, ...globalDialogProps }, initialized: true, setDialog: setCustom, setConfirm, setAlert }}>
             {
                 children
             }
