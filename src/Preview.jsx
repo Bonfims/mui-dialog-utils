@@ -70,6 +70,13 @@ function ButtonThatLoadsDialogWithContextExample({ children }){
 function Preview() {
     const { setAlert, setConfirm, setDialog } = useDialog();
 
+    React.useEffect(() => {
+        if(setAlert){
+            console.log(setAlert);
+           setAlert("Render Test!");
+        }
+    }, [setAlert]);
+
     return (
         <div style={{ padding: "100px" }}>
             <h1>Dialog Utils</h1>

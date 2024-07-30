@@ -68,11 +68,10 @@ export default function DialogProvider({ globalDialogProps, children }) {
     const { globalDialogProps: currentGlobalDialogProps } = React.useContext(DialogContext);
     const [dialogs, setDialogsStack] = useState([]);
 
-    const handleClose = () =>
-        dialogs.pop() | setDialogsStack([...dialogs]);
+    const handleClose = React.useCallback(() => setDialogsStack((prev) => { const n = [...prev]; n.pop(); return n; }), [setDialogsStack]);
 
-    const setDialog = (title, content, actions, options = {}) =>
-        dialogs.push({ title, content, actions, options }) | setDialogsStack([...dialogs]);
+    const setDialog = React.useCallback((title, content, actions, options = {}) =>
+        setDialogsStack((prev) => { const n = [...prev, { title, content, actions, options }]; return n }), [setDialogsStack]);
 
     /**
      * Faz uma seleção genérica dos parâmetros necessários para os diferentes tipos de Dialogo e passa para o método `setDialog` que vai empilhar.
@@ -83,7 +82,7 @@ export default function DialogProvider({ globalDialogProps, children }) {
      * @param {boolean} reject 
      * @returns 
      */
-    const setGeneric = (title, message, actions, options, reject) => new Promise((res, rej) =>
+    const setGeneric = React.useCallback((title, message, actions, options, reject) => new Promise((res, rej) =>
         setDialog(
             title ? <Title label={title} /> : undefined,
             <Description message={message} />,
@@ -104,17 +103,17 @@ export default function DialogProvider({ globalDialogProps, children }) {
                 }
             </Action>,
             { onClose: () => handleClose() | reject ? rej("dialog closed") : res(), ...options }
-        ));
+        )), [setDialog]);
 
-    const setAlert = (message, options) =>
+    const setAlert = React.useCallback((message, options) =>
         setGeneric(
             options?.title,
             message,
             { label: options?.label || "Confirmar" },
             options
-        );
+        ), [setGeneric]);
 
-    const setConfirm = (message, title, options) =>
+    const setConfirm = React.useCallback((message, title, options) =>
         setGeneric(
             title,
             message,
@@ -124,18 +123,26 @@ export default function DialogProvider({ globalDialogProps, children }) {
             ],
             options,
             true
-        );
+        ), [setGeneric]);
 
-    const setCustom = (content, options) =>
+    const setCustom = React.useCallback((content, options) =>
         content ? setDialog(
             null,
             <Content>{content}</Content>,
             null,
             options
-        ) : handleClose();
+        ) : handleClose(), [handleClose, setDialog]);
+
+    const shared = React.useMemo(() => ({
+        globalDialogProps: { ...currentGlobalDialogProps, ...globalDialogProps },
+        setDialog: setCustom, 
+        setConfirm, 
+        setAlert,
+        handleClose
+    }), [currentGlobalDialogProps, globalDialogProps, setCustom, setConfirm, setAlert, handleClose]);
 
     return (
-        <DialogContext.Provider value={{ globalDialogProps: { ...currentGlobalDialogProps, ...globalDialogProps }, initialized: true, setDialog: setCustom, setConfirm, setAlert }}>
+        <DialogContext.Provider value={shared}>
             {
                 children
             }

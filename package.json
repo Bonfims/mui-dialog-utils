@@ -1,6 +1,6 @@
 {
   "name": "mui-dialog-utils",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "main": "./dist/dialog-utils.umd.js",
   "module": "./dist/dialog-utils.es.js",
